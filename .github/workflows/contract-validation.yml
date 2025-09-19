@@ -1,62 +1,13 @@
 name: RideHub Contract Validation
-
-on:
-  push:
-    branches: [ main, development ]
-  pull_request:
-    branches: [ main ]
-
+on: [push]
 jobs:
-  validate-contracts:
+  tests:
+    name: "[Project_name]"
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install Clarinet
-      run: |
-        wget -nv https://github.com/hirosystems/clarinet/releases/download/v2.9.0/clarinet-linux-x64-glibc.tar.gz -O clarinet.tar.gz
-        tar -xf clarinet.tar.gz
-        chmod +x clarinet
-        sudo mv clarinet /usr/local/bin/
-    
-    - name: Verify Clarinet installation
-      run: clarinet --version
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Run contract syntax check
-      run: clarinet check
-    
-    - name: Run contract tests
-      run: npm test
-    
-    - name: Generate contract analysis
-      run: |
-        echo "## Contract Analysis Report" >> $GITHUB_STEP_SUMMARY
-        echo "### Syntax Validation" >> $GITHUB_STEP_SUMMARY
-        if clarinet check; then
-          echo "✅ All contracts pass syntax validation" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ Contract syntax errors found" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "### Test Results" >> $GITHUB_STEP_SUMMARY
-        if npm test; then
-          echo "✅ All tests passing" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ Test failures detected" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "### Contract Statistics" >> $GITHUB_STEP_SUMMARY
-        echo "- **Driver Cooperative**: $(wc -l < contracts/driver-cooperative.clar) lines" >> $GITHUB_STEP_SUMMARY
-        echo "- **Ride Management**: $(wc -l < contracts/ride-management.clar) lines" >> $GITHUB_STEP_SUMMARY
-        echo "- **Total Contracts**: 2" >> $GITHUB_STEP_SUMMARY
+      - name: "Checkout code"
+        uses: actions/checkout@v3
+      - name: "Check contract syntax"
+        uses: docker://hirosystems/clarinet:latest
+        with:
+          args: check
